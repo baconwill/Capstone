@@ -1,0 +1,9 @@
+[data_collection]
+parent_directory = Data
+gesture = E
+number_of_vids = 200
+video_source = 0
+setup_check = True
+
+
+

@@ -16,13 +16,7 @@ mp_drawing = mp.solutions.drawing_utils
 # function to draw mediapipe landmarks on capture frame
 def draw_hand_landmarks(image, result):
 	if result.multi_hand_landmarks:
-		for handslms in result.multi_hand_landmarks:
-			(handslms)
-			# prinprintt(mp_hands.HAND_CONNECTIONS)
-			# 	
-			# z_hand = np.array([[int(res.z)] for res in handslms.landmark]).flatten() 
-			# mp_drawing.draw_landmarks(image)
-																												# points 																	lines
+		for handslms in result.multi_hand_landmarks:																	# points 																	lines
 			mp_drawing.draw_landmarks(image, handslms, mp_hands.HAND_CONNECTIONS,mp_drawing.DrawingSpec(color=(255,255,255), thickness=1,circle_radius=1),mp_drawing.DrawingSpec(color=(255,51,255), thickness=1,circle_radius=1))
 
 
@@ -39,13 +33,13 @@ zero_hands2d = np.concatenate([np.zeros(21*2),np.zeros(21*2)])
 # 	return classNames
 
 
-# tells you if it is a left or right hand
-def get_label(index, hand, results):
-	label = None
-	for idx, classification in enumerate(results.multi_handedness):
-		if classification.classification[0].index == index:
-			label = classification.classification[0].label
-	return label
+# # tells you if it is a left or right hand
+# def get_label(index, hand, results):
+# 	label = None
+# 	for idx, classification in enumerate(results.multi_handedness):
+# 		if classification.classification[0].index == index:
+# 			label = classification.classification[0].label
+# 	return label
 
 
 def extract_no_order2d(result):
@@ -97,29 +91,29 @@ def extract_no_order(result):
 	return landmark
 
 
-# def extract_no_order(result):
-# 	if result.multi_hand_landmarks:
-# 		if len(result.multi_hand_landmarks) == 1:
-# 			hand = result.multi_hand_landmarks[0]
-# 			# hand_label = get_label(1, hand, result)
-# 			# if hand_label == 'Left':
-# 			first_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-# 			second_hand = np.zeros(21*3)
-# 			# else:
-# 			# 	right_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-# 			# 	left_hand = np.zeros(21*3)
-# 		else:
-# 			hand1 = result.multi_hand_landmarks[0]
-# 			hand2 = result.multi_hand_landmarks[1]
-# 			# hand_label = get_label(1, hand1, result)
-# 			# if hand_label == 'Left':
-# 			first_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
-# 			second_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
-# 	else:
-# 		first_hand = np.zeros(21*3)
-# 		second_hand = np.zeros(21*3)
-# 	landmark = np.concatenate([first_hand,second_hand])
-# 	return landmark
+def extract_no_order(result):
+	if result.multi_hand_landmarks:
+		if len(result.multi_hand_landmarks) == 1:
+			hand = result.multi_hand_landmarks[0]
+			# hand_label = get_label(1, hand, result)
+			# if hand_label == 'Left':
+			first_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
+			second_hand = np.zeros(21*3)
+			# else:
+			# 	right_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
+			# 	left_hand = np.zeros(21*3)
+		else:
+			hand1 = result.multi_hand_landmarks[0]
+			hand2 = result.multi_hand_landmarks[1]
+			# hand_label = get_label(1, hand1, result)
+			# if hand_label == 'Left':
+			first_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
+			second_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
+	else:
+		first_hand = np.zeros(21*3)
+		second_hand = np.zeros(21*3)
+	landmark = np.concatenate([first_hand,second_hand])
+	return landmark
 
 
 
