@@ -1,0 +1,36 @@
+-----------------------------
+First Option:
+Article: https://towardsdatascience.com/american-sign-language-hand-gesture-recognition-f1c4468fb177
+Github: https://github.com/chenson2018/APM-Project/blob/master/README.md
+
+pros:
+- Works directly from image data (no Mediapipe)
+
+cons:
+- Does not currently work in real time
+
+Conclusion: Interesting approach, could use as fallback
+-----------------------------
+Second Option:
+Article: https://www.digitalocean.com/community/tutorials/how-to-build-a-neural-network-to-translate-sign-language-into-english
+
+pros:
+- simple approach
+- prebuilt dataset
+
+cons:
+- doesn't work with J and Z (dynamic signs)
+
+Conclusion: Need to find a method that uses multiple frames
+------------------------------
+Third Option:
+Article: https://machinelearningmastery.com/how-to-develop-rnn-models-for-human-activity-recognition-time-series-classification/
+
+pros: 
+- Approach uses dynamic data that should translate to J and Z
+
+cons:
+- Requires sensor input
+
+Conclusion: Looks like the best approach, will try LSTM + mediapipe
+
