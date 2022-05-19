@@ -9,8 +9,9 @@ import configparser
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False,max_num_hands=1, min_detection_confidence=0.5, model_complexity = 0)
-# hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.8)
 mp_drawing = mp.solutions.drawing_utils
+zero_hands = np.concatenate([np.zeros(21*3),np.zeros(21*3)])
+
 
 
 # function to draw mediapipe landmarks on capture frame
@@ -20,140 +21,70 @@ def draw_hand_landmarks(image, result):
 			mp_drawing.draw_landmarks(image, handslms, mp_hands.HAND_CONNECTIONS,mp_drawing.DrawingSpec(color=(255,255,255), thickness=1,circle_radius=1),mp_drawing.DrawingSpec(color=(255,51,255), thickness=1,circle_radius=1))
 
 
-# zero_hand = np.zeros(21*3)
-# zerohand = np.zeros(21*3)
-zero_hands2d = np.concatenate([np.zeros(21*2),np.zeros(21*2)])
-
-
-# # get gesture classes from file
-# def getClasses(gesture_file):
-# 	f = open('gesture.names', 'r')
-# 	classNames = f.read().split('\n')
-# 	f.close()
-# 	return classNames
-
-
-# # tells you if it is a left or right hand
-# def get_label(index, hand, results):
-# 	label = None
-# 	for idx, classification in enumerate(results.multi_handedness):
-# 		if classification.classification[0].index == index:
-# 			label = classification.classification[0].label
-# 	return label
-
-
-def extract_no_order2d(result):
-	if result.multi_hand_landmarks:
-		if len(result.multi_hand_landmarks) == 1:
-			hand = result.multi_hand_landmarks[0]
-			# hand_label = get_label(1, hand, result)
-			# if hand_label == 'Left':
-			# for num, res in enumerate(hand.landmark):
-				# print("{}: ({}, {})".format(num, res.x, res.y))
-			first_hand = np.array([[res.x, res.y] for res in hand.landmark]).flatten() 
-			second_hand = np.zeros(21*2)
-			# else:
-			# 	right_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-			# 	left_hand = np.zeros(21*3)
-		else:
-			hand1 = result.multi_hand_landmarks[0]
-			hand2 = result.multi_hand_landmarks[1]
-			# hand_label = get_label(1, hand1, result)
-			# if hand_label == 'Left':
-			first_hand = np.array([[res.x, res.y] for res in hand1.landmark]).flatten() 
-			second_hand = np.array([[res.x, res.y] for res in hand2.landmark]).flatten() 
-	else:
-		first_hand = np.zeros(21*2)
-		second_hand = np.zeros(21*2)
-	landmark = np.concatenate([first_hand,second_hand])
-	# print(landmark)
-	# print("==========================")
-	return landmark
 
 
 
-def extract_no_order(result):
-	if result.multi_hand_landmarks:
-		if len(result.multi_hand_landmarks) == 1:
-			hand = result.multi_hand_landmarks[0]
+#  Normalizes the coordinates
+def transform_dataframe(frame):
+    data = frame[:63]
+    padding = frame[63:]
 
-			first_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-			second_hand = np.zeros(21*3)
-		else:
-			hand1 = result.multi_hand_landmarks[0]
-			hand2 = result.multi_hand_landmarks[1]
-			first_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
-			second_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
-	else:
-		first_hand = np.zeros(21*3)
-		second_hand = np.zeros(21*3)
-	landmark = np.concatenate([first_hand,second_hand])
-	return landmark
+    x = frame[:63:3]
+    y = frame[1:63:3]
+    z = frame[2:63:3]
 
+    left = min(x)
+    right = max(x)
+    top = min(y)
 
-def extract_no_order(result):
-	if result.multi_hand_landmarks:
-		if len(result.multi_hand_landmarks) == 1:
-			hand = result.multi_hand_landmarks[0]
-			# hand_label = get_label(1, hand, result)
-			# if hand_label == 'Left':
-			first_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-			second_hand = np.zeros(21*3)
-			# else:
-			# 	right_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-			# 	left_hand = np.zeros(21*3)
-		else:
-			hand1 = result.multi_hand_landmarks[0]
-			hand2 = result.multi_hand_landmarks[1]
-			# hand_label = get_label(1, hand1, result)
-			# if hand_label == 'Left':
-			first_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
-			second_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
-	else:
-		first_hand = np.zeros(21*3)
-		second_hand = np.zeros(21*3)
-	landmark = np.concatenate([first_hand,second_hand])
-	return landmark
+    image_width = 1080.0
 
+    perc_width = right - left
+    width_in_image = image_width * (right - left)
 
+    if width_in_image == 0:
+        return False
+
+    if perc_width < 0.1:
+        return False
+
+    scale_factor = 400.0 / width_in_image
+
+    for (idx, val) in enumerate(x):
+        x[idx] = round(scale_factor * (val - left), 2)
+
+    for (idx, val) in enumerate(y):
+        y[idx] = round(scale_factor * (val - top), 2)
+
+    for (idx, val) in enumerate(z):
+        z[idx] = round(scale_factor * val, 2)
+
+    return True
 
 
 # turns the result from the landmark detector into a numpy array of:
 # -------  (2 hands)x(21 landmarks)x(cartesian triplet)  ----------
 # with a final shape of:
 # ---------------------- (2 hands)x(63 points)  -------------------
-
-# NOTE: hand order will always be LEFT then RIGHT in the array
-#                                 ----      -----
-# After trying this... don't do it, it's dumb won't work well with ios 
-# mediapipe, use the other one
-
-def extract_keypoints(result):
+def extract_no_order(result):
 	if result.multi_hand_landmarks:
 		if len(result.multi_hand_landmarks) == 1:
 			hand = result.multi_hand_landmarks[0]
-			hand_label = get_label(1, hand, result)
-			if hand_label == 'Left':
-				left_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-				right_hand = np.zeros(21*3)
-			else:
-				right_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
-				left_hand = np.zeros(21*3)
+
+			first_hand = np.array([[res.x, res.y, res.z] for res in hand.landmark]).flatten() 
+			second_hand = np.zeros(21*3)
 		else:
 			hand1 = result.multi_hand_landmarks[0]
 			hand2 = result.multi_hand_landmarks[1]
-			hand_label = get_label(1, hand1, result)
-			if hand_label == 'Left':
-				left_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
-				right_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
-			else:
-				right_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
-				left_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
+			first_hand = np.array([[res.x, res.y, res.z] for res in hand1.landmark]).flatten() 
+			second_hand = np.array([[res.x, res.y, res.z] for res in hand2.landmark]).flatten() 
 	else:
-		left_hand = np.zeros(21*3)
-		right_hand = np.zeros(21*3)
-	landmark = np.concatenate([left_hand,right_hand])
+		first_hand = np.zeros(21*3)
+		second_hand = np.zeros(21*3)
+	landmark = np.concatenate([first_hand,second_hand])
 	return landmark
+
+
 
 
 # get mediapipe results from the captured frame
@@ -194,10 +125,7 @@ def removeFolder(folder_dir):
 def captureVideo(video_dir, gesture, video_count,frame_count,video_source,setup_check):
 	print("capturing video...")
 	cap = cv2.VideoCapture(video_source)
-	# cap = cv2.VideoCapture(0)
-	# cap.set(cv2.CAP_PROP_EXPOSURE, -50) 
 	frame_num = 0
-	# cv2.waitKey(20)
 	while cap.isOpened():
 		ret,frame = cap.read()
 		if ret and (frame_num < frame_count):
@@ -205,14 +133,13 @@ def captureVideo(video_dir, gesture, video_count,frame_count,video_source,setup_
 			draw_hand_landmarks(image,results)
 			cv2.imshow('OpenCV Feed', image)
 			keypoints = extract_no_order(results)
-			if (not setup_check) and (not ((keypoints == zero_hands2d).all())):
+			transformed = transform_dataframe(keypoints)
+			if (not setup_check) and (not ((keypoints == zero_hands).all())) and transformed:
 				frame_path = os.path.join(video_dir,"{}{}_f{}".format(gesture, video_count, frame_num))
 				np.save(frame_path, keypoints)
 				frame_num += 1
 			elif setup_check:
-				# print(keypoints)
 				frame_num += 1
-			# cv2.waitKey(10)
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				break
 		else:

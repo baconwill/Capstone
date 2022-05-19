@@ -1,8 +1,8 @@
 [data_collection]
 parent_directory = Data
-gesture = E
-number_of_vids = 200
-video_source = 0
+gesture = Heart
+number_of_vids = 20
+video_source = 1
 setup_check = True
 
 
