@@ -19,7 +19,7 @@ def getClasses(gesture_file):
 
 classNames = getClasses('gesture.names')
 label_map = {label:num for num, label in enumerate(classNames)}
-res_dir = "Data"
+res_dir = "new-data"
 
 sequence_length = 10
 sequences, labels = [], []
@@ -32,14 +32,11 @@ for action in classNames:
 			continue
 		window = []
 		for frame_num in range(sequence_length):
-			# print(os.path.join(res_dir, action, vr, "{}_f{}.npy".format(vr,frame_num)))
 			res = np.load(os.path.join(res_dir, action, vr, "{}_f{}.npy".format(vr,frame_num)))
-			# print(res)
 			window.append(res)
 		sequences.append(window)
 		labels.append(label_map[action])
 
-# print(np.array(sequences).shape)
 
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
@@ -64,7 +61,7 @@ model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categ
 model.fit(X_train, y_train, epochs = 5, callbacks=[tb_callback])
 res = model.predict(X_test)
 print(res)
-model.save('my_model')
+model.save('AllTest')
 print(actions[np.argmax(res[2])])
 print(actions[np.argmax(y_test[2])])
 
