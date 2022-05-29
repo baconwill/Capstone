@@ -1,9 +1,0 @@
-[data_collection]
-parent_directory = Data
-gesture = Heart
-number_of_vids = 20
-video_source = 1
-setup_check = True
-
-
-
