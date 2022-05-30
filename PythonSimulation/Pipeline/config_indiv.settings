@@ -1,9 +1,0 @@
-[data_collection]
-parent_directory = data_indiv
-gesture = B
-number_of_vids = 100
-video_source = 1
-setup_check = False
-
-
-
